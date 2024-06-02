@@ -620,27 +620,27 @@ impl SuspendNotifier for PLL {
 /// Placeholder for `avr_device::asm::delay_cycles`
 ///
 /// https://github.com/Rahix/avr-device/pull/127
-#[inline(always)]
-fn delay_cycles(cycles: u32) {
-    let mut cycles_bytes = cycles.to_le_bytes();
-    // Each loop iteration takes 6 cycles when the branch is taken,
-    // and 5 cycles when the branch is not taken.
-    // So, this loop is guaranteed to run for at least `cycles - 1` cycles,
-    // and there will be approximately 4 cycles before the loop to initialize
-    // the counting registers.
-    unsafe {
-        asm!(
-            "1:",
-            "subi {r0}, 6",
-            "sbci {r1}, 0",
-            "sbci {r2}, 0",
-            "sbci {r3}, 0",
-            "brcc 1b",
-
-            r0 = inout(reg_upper) cycles_bytes[0],
-            r1 = inout(reg_upper) cycles_bytes[1],
-            r2 = inout(reg_upper) cycles_bytes[2],
-            r3 = inout(reg_upper) cycles_bytes[3],
-        )
-    }
-}
+//#[inline(always)]
+//fn delay_cycles(cycles: u32) {
+//    let mut cycles_bytes = cycles.to_le_bytes();
+//    // Each loop iteration takes 6 cycles when the branch is taken,
+//    // and 5 cycles when the branch is not taken.
+//    // So, this loop is guaranteed to run for at least `cycles - 1` cycles,
+//    // and there will be approximately 4 cycles before the loop to initialize
+//    // the counting registers.
+//    unsafe {
+//        asm!(
+//            "1:",
+//            "subi {r0}, 6",
+//            "sbci {r1}, 0",
+//            "sbci {r2}, 0",
+//            "sbci {r3}, 0",
+//            "brcc 1b",
+//
+//            r0 = inout(reg_upper) cycles_bytes[0],
+//            r1 = inout(reg_upper) cycles_bytes[1],
+//            r2 = inout(reg_upper) cycles_bytes[2],
+//            r3 = inout(reg_upper) cycles_bytes[3],
+//        )
+//    }
+//}
