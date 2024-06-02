@@ -4,11 +4,11 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-avr-device = { version = "0.5", features = ["atmega32u4"] }
-usb-device = "0.2"
+avr-device = { version = "0.5.4", features = ["atmega32u4"] }
+usb-device = "0.3.2"
 
 [dev-dependencies]
-usbd-hid = "0.6"
+usbd-hid = "0.7"
 
 [dev-dependencies.arduino-hal]
 git = "https://github.com/Rahix/avr-hal.git"
