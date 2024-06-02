@@ -1,20 +1,19 @@
 #![no_std]
 #![feature(asm_experimental_arch)]
 
-use core::{arch::asm, cell::Cell, cmp::max};
+use core::{cell::Cell, cmp::max};
 
-use avr_device::atmega32u4::{
-    usb_device::{udint, ueintx, usbint, UDINT, UEINTX, USBINT},
-    PLL, USB_DEVICE,
-};
 use avr_device::asm::delay_cycles;
+use avr_device::atmega32u4::{
+    PLL,
+    usb_device::{udint, UDINT, ueintx, UEINTX, usbint, USBINT}, USB_DEVICE,
+};
 use avr_device::interrupt::{self, CriticalSection, Mutex};
 use usb_device::{
     bus::PollResult,
     class_prelude::UsbBusAllocator,
     endpoint::{EndpointAddress, EndpointType},
     UsbDirection, UsbError,
-
 };
 
 const MAX_ENDPOINTS: usize = 7;
@@ -109,7 +108,7 @@ impl<S: SuspendNotifier> UsbBus<S> {
         })
     }
 
-    fn active_endpoints(&self) -> impl Iterator<Item = (usize, &EndpointTableEntry)> {
+    fn active_endpoints(&self) -> impl Iterator<Item=(usize, &EndpointTableEntry)> {
         self.endpoints
             .iter()
             .enumerate()
@@ -206,7 +205,7 @@ impl<S: SuspendNotifier> usb_device::bus::UsbBus for UsbBus<S> {
         let entry = &mut self.endpoints[ep_addr.index()];
         entry.eptype_bits = match ep_type {
             EndpointType::Control => EP_TYPE_CONTROL,
-            EndpointType::Isochronous => EP_TYPE_ISOCHRONOUS,
+            EndpointType::Isochronous { .. } => EP_TYPE_ISOCHRONOUS,
             EndpointType::Bulk => EP_TYPE_BULK,
             EndpointType::Interrupt => EP_TYPE_INTERRUPT,
         };
@@ -548,16 +547,16 @@ trait ClearInterrupts {
     type Writer;
 
     fn clear_interrupts<F>(&self, f: F)
-    where
-        for<'w> F: FnOnce(&mut Self::Writer) -> &mut Self::Writer;
+        where
+                for<'w> F: FnOnce(&mut Self::Writer) -> &mut Self::Writer;
 }
 
 impl ClearInterrupts for UDINT {
     type Writer = udint::W;
 
     fn clear_interrupts<F>(&self, f: F)
-    where
-        for<'w> F: FnOnce(&mut Self::Writer) -> &mut Self::Writer,
+        where
+                for<'w> F: FnOnce(&mut Self::Writer) -> &mut Self::Writer,
     {
         // Bits 1,7 reserved as do not set. Setting all other bits has no effect
         self.write(|w| f(unsafe { w.bits(0x7d) }))
@@ -568,8 +567,8 @@ impl ClearInterrupts for UEINTX {
     type Writer = ueintx::W;
 
     fn clear_interrupts<F>(&self, f: F)
-    where
-        for<'w> F: FnOnce(&mut Self::Writer) -> &mut Self::Writer,
+        where
+                for<'w> F: FnOnce(&mut Self::Writer) -> &mut Self::Writer,
     {
         // Bit 5 read-only. Setting all other bits has no effect, EXCEPT:
         //  - RXOUTI/KILLBK should not be set for "IN" endpoints (XXX end-user beware)
@@ -581,8 +580,8 @@ impl ClearInterrupts for USBINT {
     type Writer = usbint::W;
 
     fn clear_interrupts<F>(&self, f: F)
-    where
-        for<'w> F: FnOnce(&mut Self::Writer) -> &mut Self::Writer,
+        where
+                for<'w> F: FnOnce(&mut Self::Writer) -> &mut Self::Writer,
     {
         // Bits 7:1 are reserved as do not set.
         self.write(|w| f(unsafe { w.bits(0x01) }))
